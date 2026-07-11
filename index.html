@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>왕좌의 게임 인터랙티브 시즌 가이드</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Noto+Serif+KR:wght@500;700;900&family=Pretendard:wght@400;500;700;800&display=swap');
+    :root{
+      --paper:#fbf7ef;--card:#fffdf8;--ink:#251b14;--muted:#756454;
+      --gold:#b48839;--gold2:#e5c071;--line:#ddceb8;
+      --shadow:0 18px 55px rgba(76,45,20,.14);--radius:22px;
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth}
+    body{margin:0;background:radial-gradient(circle at 20% 0%,#fffaf1 0,#fbf7ef 38%,#f0e3d0 100%);color:var(--ink);font-family:Pretendard,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.65;}
+    body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(120,82,35,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(120,82,35,.025) 1px,transparent 1px);background-size:38px 38px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),rgba(0,0,0,.15));}
+
+    /* ─── TOPBAR ─── */
+    .topbar{position:sticky;top:0;z-index:30;backdrop-filter:blur(18px);background:rgba(251,247,239,.86);border-bottom:1px solid rgba(180,136,57,.28);}
+    .nav{max-width:1280px;margin:auto;padding:10px 20px;display:flex;align-items:center;gap:12px;justify-content:space-between;}
+    .brand{display:flex;align-items:center;gap:10px;min-width:200px;}
+    .sigil{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#2d2017,#7b5421);color:#f7d98b;font-size:18px;}
+    .brand h1{font-family:Cinzel,'Noto Serif KR',serif;margin:0;font-size:17px;letter-spacing:.04em;}
+    .brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.18em;text-transform:uppercase;}
+    .quick{display:flex;gap:7px;overflow:auto;scrollbar-width:none;}
+    .quick::-webkit-scrollbar{display:none;}
+    .ghost,.quick button{border:1px solid rgba(180,136,57,.3);background:rgba(255,253,248,.8);color:var(--ink);padding:8px 12px;border-radius:999px;font-weight:800;white-space:nowrap;cursor:pointer;transition:.2s;font-size:13px;}
+    .quick button.active,.quick button:hover,.ghost:hover{background:#2b2118;color:#f7ddb1;border-color:#2b2118;}
+
+    /* ─── HERO ─── */
+    .hero{max-width:1280px;margin:0 auto;padding:64px 20px 28px;display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:end;}
+    .eyebrow{color:var(--gold);font-weight:900;letter-spacing:.22em;text-transform:uppercase;font-size:11px;}
+    .hero h2{font-family:Cinzel,'Noto Serif KR',serif;font-size:clamp(34px,5.5vw,72px);line-height:.96;margin:8px 0 16px;letter-spacing:-.04em;}
+    .hero p{color:#5b4c3f;font-size:17px;max-width:700px;}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px;}
+    .stat{border:1px solid rgba(180,136,57,.22);background:rgba(255,255,255,.55);border-radius:16px;padding:12px;}
+    .stat b{display:block;font-family:Cinzel,serif;font-size:26px;}
+    .stat span{font-size:11px;color:var(--muted);font-weight:800;}
+    .hero-card{background:linear-gradient(155deg,rgba(255,253,248,.96),rgba(242,228,204,.88));border:1px solid rgba(180,136,57,.3);border-radius:28px;padding:22px;box-shadow:var(--shadow);}
+    .hero-card h3{font-family:'Noto Serif KR',serif;font-size:22px;margin:8px 0 10px;}
+    .hero-card p{color:#5d4a38;font-size:14px;}
+
+    /* ─── SEASON SELECTOR ─── */
+    .controls{max-width:1280px;margin:0 auto 18px;padding:0 20px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;}
+    .season-track{display:flex;gap:9px;overflow:auto;padding-bottom:4px;scrollbar-width:none;}
+    .season-track::-webkit-scrollbar{display:none;}
+    .season-btn{min-width:92px;border:1px solid rgba(180,136,57,.24);background:rgba(255,253,248,.76);border-radius:16px;padding:11px 9px;cursor:pointer;text-align:left;transition:.22s;font:inherit;}
+    .season-btn strong{display:block;font-family:Cinzel,serif;font-size:17px;color:var(--gold);}
+    .season-btn span{display:block;font-size:10px;color:var(--muted);font-weight:800;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;}
+    .season-btn.active{background:#2b2118;color:#fff;border-color:#2b2118;}
+    .season-btn.active strong{color:#e7c681;}
+    .season-btn.active span{color:rgba(255,255,255,.6);}
+    .search{position:relative;}
+    .search input{width:260px;padding:12px 14px 12px 38px;border-radius:16px;border:1px solid rgba(180,136,57,.3);background:#fffdf8;color:var(--ink);font-weight:700;font-family:inherit;font-size:13px;}
+    .search::before{content:"⌕";position:absolute;left:13px;top:6px;font-size:22px;color:var(--gold);}
+
+    /* ─── MAIN GRID ─── */
+    main{max-width:1280px;margin:auto;padding:0 20px 80px;}
+    .panel{background:rgba(255,253,248,.8);border:1px solid rgba(180,136,57,.22);border-radius:var(--radius);box-shadow:var(--shadow);}
+    .section-title{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:0 0 16px;}
+    .section-title h3{font-family:'Noto Serif KR',serif;font-size:26px;line-height:1.15;margin:0;}
+    .section-title small{color:var(--muted);font-weight:900;font-size:12px;}
+
+    /* ─── SEASON VIEW ─── */
+    .season-view{display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;margin-bottom:18px;}
+    .story{padding:24px;}
+    .story-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+    .plot{background:#fffaf2;border:1px solid #eadbc4;border-radius:16px;padding:16px;position:relative;overflow:hidden;}
+    .plot::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--accent,var(--gold));}
+    .plot h4{font-family:'Noto Serif KR',serif;margin:0 0 7px;font-size:16px;}
+    .plot p{margin:0;color:#5c4d41;font-size:13px;line-height:1.6;}
+    .side{display:grid;gap:12px;}
+    .quote{padding:22px;background:linear-gradient(145deg,#32261d,#7c5a27);color:#fff;border-radius:var(--radius);box-shadow:var(--shadow);}
+    .quote b{font-family:Cinzel,serif;color:#f6d48c;font-size:12px;letter-spacing:.08em;}
+    .quote p{margin:10px 0 0;color:#f9ead0;font-size:14px;}
+    .timeline{padding:16px;}
+    .timeline ol{margin:0;padding:0;list-style:none;display:grid;gap:8px;}
+    .timeline li{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start;}
+    .timeline i{font-style:normal;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#efe2cb;color:#795922;font-weight:900;font-size:11px;}
+    .timeline span{font-size:12px;color:#594a3d;font-weight:700;padding-top:6px;}
+
+    /* ─── CHARACTERS ─── */
+    .characters{margin-bottom:18px;padding:22px;}
+    .filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px;}
+    .chip{border:1px solid #e1cfb6;background:#fffaf2;border-radius:999px;padding:7px 11px;cursor:pointer;font-weight:900;color:#6a5847;font-size:12px;font-family:inherit;}
+    .chip.active{background:#2b2118;color:#fff;border-color:#2b2118;}
+    .char-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+    .char{border:1px solid #eadbc4;background:#fffdf8;border-radius:16px;padding:14px;cursor:pointer;transition:.2s;text-align:left;font:inherit;color:inherit;width:100%;}
+    .char:hover,.char.selected{transform:translateY(-3px);box-shadow:0 12px 28px rgba(75,48,22,.12);border-color:var(--gold);}
+    .char.selected{background:#fff9ee;}
+    .badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#fff;background:var(--house,#8b7340);border-radius:999px;padding:3px 8px;font-weight:900;}
+    .char h4{margin:10px 0 5px;font-family:'Noto Serif KR',serif;font-size:16px;}
+    .char p{margin:0;color:#67584b;font-size:12px;line-height:1.55;}
+    .char .season-role{margin-top:8px;font-size:11px;color:var(--gold);font-weight:900;border-top:1px solid #ecdeca;padding-top:7px;}
+    .char-detail{margin-top:12px;padding:16px;background:#f8efe2;border:1px solid #ead7bd;border-radius:16px;display:none;}
+    .char-detail.show{display:block;}
+    .char-detail h4{margin:0 0 4px;font-family:'Noto Serif KR',serif;font-size:20px;}
+    .char-detail p{color:#5c4d41;font-size:13px;margin:6px 0 0;}
+    .char-detail .tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+    .tag{font-size:11px;padding:4px 8px;border-radius:999px;background:#fffdf8;border:1px solid #e6d5bd;color:#634d34;font-weight:800;}
+
+    /* ─── MAP ─── */
+    .map-section{padding:22px;}
+    .map-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+    .map-tools select,.map-tools button{border:1px solid #dfccb1;background:#fffdf8;border-radius:12px;padding:9px 12px;font-weight:900;color:#3b2b1e;font-family:inherit;font-size:12px;cursor:pointer;}
+    .map-season-label{font-family:Cinzel,serif;color:var(--gold);font-size:13px;font-weight:900;letter-spacing:.06em;margin-left:auto;}
+    .map-wrap{display:grid;grid-template-columns:1fr 290px;gap:16px;align-items:start;}
+    .map-card{background:linear-gradient(180deg,#fffdf8,#f9eddd);border:1px solid #eadbc4;border-radius:20px;overflow:hidden;aspect-ratio:16/10;}
+    .map-card svg{width:100%;height:100%;}
+    .legend{padding:16px;}
+    .legend h4{margin:0 0 10px;font-family:'Noto Serif KR',serif;font-size:16px;}
+    .legend-item{display:flex;align-items:center;gap:8px;margin:8px 0;color:#5d4d40;font-weight:800;font-size:12px;}
+    .sw{width:12px;height:12px;border-radius:50%;background:var(--c);flex:none;}
+    .legend .sep{height:1px;background:#ecdeca;margin:12px 0;}
+    .factbox{padding:14px;border-radius:16px;background:#fffaf2;border:1px solid #eadbc4;margin-top:10px;}
+    .factbox strong{font-family:'Noto Serif KR',serif;font-size:14px;}
+    .factbox p{margin:5px 0 0;color:#67584b;font-size:12px;}
+
+    /* ─── SVG MAP ─── */
+    .node-g{cursor:pointer;}
+    .node-g:hover .nc{opacity:.85;r:attr(r);}
+    .nc{stroke:#fff;stroke-width:2.5;filter:drop-shadow(0 5px 8px rgba(30,15,5,.2));}
+    .node-g.dim{opacity:.12;}
+    .node-g.selected-node .nc{stroke:#f6d48c;stroke-width:4;}
+    .edge-g line{stroke-width:2;opacity:.7;}
+    .edge-g.dim line{opacity:.08;}
+    .edge-g.ally line{stroke:#477b5b;}
+    .edge-g.family line{stroke:#8d6a2b;}
+    .edge-g.enemy line{stroke:#a33a31;stroke-dasharray:7 4;}
+    .edge-g.love line{stroke:#bc5872;}
+    .edge-g.command line{stroke:#4b7895;}
+    .elabel{font-size:10px;fill:#896a50;pointer-events:none;}
+    .nlabel{font-size:11px;font-weight:900;fill:#2c2117;pointer-events:none;}
+    .map-title{font-family:Cinzel,serif;font-size:13px;fill:var(--gold);fill:#b48839;}
+
+    /* ─── TOAST ─── */
+    .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);opacity:0;background:#2b2118;color:#fff;padding:11px 16px;border-radius:999px;z-index:60;transition:.22s;box-shadow:var(--shadow);font-weight:900;font-size:13px;pointer-events:none;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    footer{padding:32px 20px 56px;text-align:center;color:#7a6a5a;font-size:12px;}
+
+    /* ─── RESPONSIVE ─── */
+    @media(max-width:980px){
+      .hero,.season-view,.map-wrap{grid-template-columns:1fr;}
+      .story-grid{grid-template-columns:1fr 1fr;}
+      .char-grid{grid-template-columns:repeat(2,1fr);}
+      .controls{grid-template-columns:1fr;}
+      .search input{width:100%;}
+      .nav{flex-direction:column;align-items:flex-start;}
+      .quick{width:100%;}
+    }
+    @media(max-width:560px){
+      .hero{padding-top:34px;}
+      .stats{grid-template-columns:1fr 1fr;}
+      .char-grid{grid-template-columns:1fr 1fr;}
+      .story-grid{grid-template-columns:1fr;}
+      .map-card{aspect-ratio:4/3;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <nav class="nav">
+    <div class="brand">
+      <div class="sigil">♛</div>
+      <div><h1>Game of Thrones</h1><small>Season Guide · Light Mode</small></div>
+    </div>
+    <div class="quick">
+      <button data-jump="seasons">시즌 요약</button>
+      <button data-jump="characters">등장인물</button>
+      <button data-jump="map">관계도 이미지</button>
+    </div>
+  </nav>
+</div>
+
+<header class="hero" id="top">
+  <div>
+    <div class="eyebrow">Light Mode · Westeros Codex · Season 1–8</div>
+    <h2>왕좌의 게임<br/>시즌별 완전 가이드</h2>
+    <p>시즌 버튼 하나로 내용 요약 · 해당 시즌 등장인물 · 해당 시즌 인물관계도가 동시에 갱신됩니다.</p>
+    <div class="stats">
+      <div class="stat"><b>8</b><span>시즌별 독립 정리</span></div>
+      <div class="stat"><b>28</b><span>인물 카드</span></div>
+      <div class="stat"><b>SVG</b><span>시즌별 관계도</span></div>
+    </div>
+  </div>
+  <aside class="hero-card">
+    <div class="eyebrow">인터랙션 구조</div>
+    <h3>시즌이 바뀌면 모든 것이 바뀐다</h3>
+    <p>등장인물은 해당 시즌에 실제 출연한 캐릭터만 표시되고, 관계도도 그 시즌의 실제 관계선만 그려집니다. 관계도 노드를 클릭하면 인물 카드가 열립니다.</p>
+    <button class="ghost" style="margin-top:14px;" onclick="document.querySelector('#map').scrollIntoView()">관계도 바로 보기 ↓</button>
+  </aside>
+</header>
+
+<section class="controls" id="seasons">
+  <div class="season-track" id="seasonTrack"></div>
+  <div class="search"><input id="searchInput" placeholder="인물 검색: 존, 대너리스…" /></div>
+</section>
+
+<main>
+  <!-- Season summary -->
+  <div class="season-view">
+    <article class="panel story">
+      <div class="section-title">
+        <div><small id="seasonMeta"></small><h3 id="seasonTitle"></h3></div>
+        <button class="ghost" id="copySummary">요약 복사</button>
+      </div>
+      <div class="story-grid" id="plotGrid"></div>
+    </article>
+    <aside class="side">
+      <div class="quote"><b id="quoteSeason"></b><p id="quoteText"></p></div>
+      <div class="panel timeline">
+        <div class="section-title"><h3 style="font-size:20px">핵심 흐름</h3></div>
+        <ol id="timelineList"></ol>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Characters -->
+  <section class="panel characters" id="characters">
+    <div class="section-title">
+      <div><small id="charSeasonLabel"></small><h3>이 시즌 등장인물</h3></div>
+      <button class="ghost" id="clearSelection">선택 해제</button>
+    </div>
+    <div class="filters" id="houseFilters"></div>
+    <div class="char-grid" id="charGrid"></div>
+    <div class="char-detail" id="charDetail"></div>
+  </section>
+
+  <!-- Relationship map -->
+  <section class="panel map-section" id="map">
+    <div class="section-title">
+      <div><small id="mapSeasonLabel"></small><h3>이 시즌 인물 관계도</h3></div>
+    </div>
+    <div class="map-tools">
+      <select id="relationFilter">
+        <option value="all">전체 관계</option>
+        <option value="family">가족/혈연</option>
+        <option value="ally">동맹</option>
+        <option value="enemy">적대</option>
+        <option value="love">연인/혼인</option>
+        <option value="command">지휘/소속</option>
+      </select>
+      <button id="downloadPng">PNG 저장</button>
+      <span class="map-season-label" id="mapSvgLabel"></span>
+    </div>
+    <div class="map-wrap">
+      <div class="map-card">
+        <svg id="relationSvg" viewBox="0 0 900 600" role="img" aria-label="왕좌의 게임 시즌별 인물 관계도"></svg>
+      </div>
+      <aside class="legend">
+        <h4>관계 범례</h4>
+        <div class="legend-item"><span class="sw" style="--c:#8d6a2b"></span>가족/혈연</div>
+        <div class="legend-item"><span class="sw" style="--c:#477b5b"></span>동맹</div>
+        <div class="legend-item"><span class="sw" style="--c:#a33a31"></span>적대 (점선)</div>
+        <div class="legend-item"><span class="sw" style="--c:#bc5872"></span>연인/혼인</div>
+        <div class="legend-item"><span class="sw" style="--c:#4b7895"></span>지휘/소속</div>
+        <div class="sep"></div>
+        <div class="factbox" id="mapInfo">
+          <strong>사용법</strong>
+          <p>노드 클릭 → 인물 상세 오픈<br>관계 필터 → 특정 관계만 강조<br>PNG 저장 → 고해상도 이미지</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<footer>왕좌의 게임 시즌 1–8 인터랙티브 팬 가이드 · HBO 드라마 &amp; 얼음과 불의 노래 세계관 재구성</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== HOUSE COLORS ===== */
+const HOUSE = {
+  stark:      {label:'스타크',      color:'#536e88'},
+  lannister:  {label:'라니스터',    color:'#b58421'},
+  targaryen:  {label:'타르가르옌',  color:'#b43b35'},
+  baratheon:  {label:'바라테온',    color:'#343434'},
+  nightwatch: {label:'나이트 워치', color:'#1e252c'},
+  greyjoy:    {label:'그레이조이',  color:'#276172'},
+  tyrell:     {label:'티렐',        color:'#508b52'},
+  bolton:     {label:'볼튼',        color:'#7a2c3b'},
+  freefolk:   {label:'자유민',      color:'#8a7a61'},
+  whitewalker:{label:'백귀',        color:'#5f9ab8'},
+  other:      {label:'기타',        color:'#80634a'},
+};
+
+/* ===== CHARACTER MASTER DATA ===== */
+// [이름, house, 전체설명, 시즌별역할{s:역할}]
+const CH = {
+  ned:       ['네드 스타크',         'stark',      '북부의 영주. 명예와 진실을 지키려다 킹스 랜딩 정치의 희생양이 됩니다.',
+              {1:'수관(Hand)이 되어 왕위 비밀을 파헤치다 참수'}],
+  catelyn:   ['캐틀린 스타크',       'stark',      '스타크 가문의 어머니. 가족 보호를 위한 선택들이 전쟁의 흐름과 얽힙니다.',
+              {1:'남편과 아이들을 연결하는 버팀목', 2:'롭의 전쟁 조언자', 3:'피의 결혼식에서 희생'}],
+  robb:      ['롭 스타크',           'stark',      '북부의 젊은 왕. 전장 무패이지만 정치적 약속 파기로 피의 결혼식에서 몰락합니다.',
+              {1:'롭이 북부의 왕으로 추대', 2:'전쟁 지휘, 타이쇼 승리', 3:'피의 결혼식에서 학살됨'}],
+  jon:       ['존 스노우',           'stark',      '나이트 워치에서 시작해 북부의 왕, 그리고 아에곤 타르가르옌의 진실까지 짊어집니다.',
+              {1:'나이트 워치 입대', 2:'장벽 너머 정찰', 3:'야인들과 생활, 이그리트와 연애', 4:'장벽 방어전 지휘',5:'하드홈에서 나이트 킹 조우',6:'부활, 서자들의 전투 승리',7:'대너리스와 동맹 · 연인',8:'나이트 킹과 결전, 대너리스를 죽임'}],
+  arya:      ['아리아 스타크',       'stark',      '복수와 생존을 배우며 독립적 암살자로 성장하고 나이트 킹을 처단합니다.',
+              {1:'브라보스 검술 수련 시작', 2:'생존 도주', 3:'하운드와 동행', 4:'브라보스로 출발',5:'얼굴 없는 자 훈련',6:'훈련 완성 후 귀환, 왈더 복수',7:'윈터펠 귀환, 자매 재회',8:'나이트 킹 처치'}],
+  sansa:     ['산사 스타크',         'stark',      '인질과 정략혼을 거쳐 정치적 생존술을 익히고 북부의 여왕이 됩니다.',
+              {1:'킹스 랜딩 인질', 2:'조프리의 포로', 3:'제이미에게 도움 받음', 4:'리틀핑거와 함께 탈출',5:'람지 볼튼에게 강제혼',6:'존과 재회, 윈터펠 탈환',7:'리틀핑거 처형',8:'북부의 여왕으로 즉위'}],
+  bran:      ['브랜 스타크',         'stark',      '세눈박이 까마귀가 되어 과거와 진실을 보고 최종적으로 왕위에 오릅니다.',
+              {1:'타워에서 추락, 다리 마비', 4:'세눈박이 까마귀 여정',5:'능력 개발',6:'세눈박이 까마귀 계승',7:'존의 혈통 진실 파악',8:'육왕국의 왕으로 선출'}],
+  cersei:    ['세르세이 라니스터',   'lannister',  '가족과 권력을 위해 모든 수단을 쓰는 왕비이자 후반부 철왕좌의 지배자.',
+              {1:'왕비로서 권력 음모 주도', 2:'킹스 랜딩 지배', 3:'티리온과 대립', 4:'타이윈 사후 실권 추구',5:'종교권력에 역이용당함',6:'와일드파이어로 정적 제거, 철왕좌 등극',7:'표면상 동맹, 실은 배신 준비',8:'킹스 랜딩에서 최후'}],
+  jaime:     ['제이미 라니스터',     'lannister',  '왕시해자에서 복합적 명예를 찾는 기사로 변화하지만 세르세이와의 굴레에서 벗어나지 못합니다.',
+              {1:'왕비의 호위, 네드 척결', 2:'포로', 3:'한 손 잃음, 브리엔느와 브로맨스',4:'키오건으로 귀환',5:'도른 임무',6:'세르세이와 정치 동반자',7:'북방 지원, 세르세이와 결별 시도',8:'세르세이에게 돌아가 함께 최후'}],
+  tyrion:    ['티리온 라니스터',     'lannister',  '재치와 정치 감각으로 생존하며 여러 왕좌의 조언자가 되는 인물.',
+              {1:'행동의 자유로운 방랑자', 2:'임시 수관, 블랙워터 방어',3:'라니스터 책략 속 생존',4:'조프리 독살 누명, 타이윈 살해 후 탈출',5:'대너리스에게 합류',6:'대너리스의 핸드 임명',7:'핸드로서 전략 조율',8:'대너리스 배신 경고, 투옥'}],
+  joffrey:   ['조프리 바라테온',     'lannister',  '잔혹한 소년 왕. 라니스터 권력의 얼굴이지만 보라색 결혼식에서 독살됩니다.',
+              {1:'왕세자, 네드 처형 명령', 2:'잔혹한 왕으로 군림',3:'마가에리와 약혼',4:'결혼식 도중 독살'}],
+  tywin:     ['타이윈 라니스터',     'lannister',  '라니스터 권력의 냉혹한 설계자. 피의 결혼식을 획책하고 티리온과의 갈등 끝에 죽습니다.',
+              {1:'라니스터 군대 총사령', 3:'수관 취임, 피의 결혼식 기획',4:'티리온 재판, 석궁에 사망'}],
+  daenerys:  ['대너리스 타르가르옌', 'targaryen',  '드래곤의 어머니이자 해방자. 왕좌 집착과 상실 속에서 파국으로 향합니다.',
+              {1:'드로고와 결혼, 드래곤 부화', 2:'드래곤 성장, 에소스 방랑',3:'거세병 획득, 해방자로',4:'미린 통치 시작',5:'미린 위기 대응',6:'도스라키+거세병+드래곤 결집, 출항',7:'드래곤스톤 상륙, 존과 동맹',8:'나이트 킹 격파, 킹스 랜딩 학살, 존에게 암살당함'}],
+  drogo:     ['칼 드로고',           'other',      '대너리스의 첫 남편. 그의 죽음은 드래곤 탄생의 계기가 됩니다.',
+              {1:'대너리스와 결혼, 부상 후 사망'}],
+  stannis:   ['스태니스 바라테온',   'baratheon',  '정통성을 앞세운 왕위 주장자. 멜리산드레와 함께하지만 비극적 선택으로 몰락합니다.',
+              {2:'블랙워터 전투 패배', 3:'드래곤스톤 재건',4:'나이트 워치 구원',5:'윈터펠 진격, 딸 희생 후 전사'}],
+  renly:     ['렌리 바라테온',       'baratheon',  '매력적인 왕위 주장자. 형 스태니스의 그림자 마법에 죽습니다.',
+              {2:'군대 집결, 그림자 마법에 암살'}],
+  theon:     ['테온 그레이조이',     'greyjoy',    '스타크의 양자와 그레이조이 후계자 사이에서 흔들리다 고문과 속죄를 거칩니다.',
+              {1:'스타크 옆에서 성장', 2:'윈터펠 점령, 배신',3:'램지에게 붙잡혀 고문',4:'렉(리크)으로 심리 붕괴',5:'산사 탈출 돕고 달아남',6:'속죄, 누이 도움',7:'대너리스 함대 지원',8:'윈터펠 돌아와 대너리스 편에서 전사'}],
+  ygritte:   ['이그리트',            'freefolk',   '존이 사랑한 자유민 전사. 존에게 장벽 너머의 인간성을 보여줍니다.',
+              {2:'존을 포로로 잡음', 3:'존과 연인 관계',4:'장벽 전투에서 전사'}],
+  ramsay:    ['램지 볼튼',           'bolton',     '잔혹한 북부의 찬탈자. 서자들의 전투에서 존에게 패하여 죽습니다.',
+              {3:'테온 고문', 4:'볼튼 서자',5:'산사와 강제혼',6:'서자들의 전투 패배, 처형'}],
+  walder:    ['왈더 프레이',         'other',      '피의 결혼식을 연 배신자. 아리아의 복수 대상이 됩니다.',
+              {3:'피의 결혼식 주도', 6:'아리아에게 독살'}],
+  brienne:   ['브리엔느',            'other',      '명예로운 기사. 스타크 자매 보호와 제이미의 변화에 중요한 역할을 합니다.',
+              {2:'렌리를 섬김', 3:'제이미와 동행',4:'제이미와 유대 강화',5:'산사 추적',6:'윈터펠에서 산사 보호',7:'윈터펠 귀환',8:'제이미와 마지막, 킹스가드 기록'}],
+  margaery:  ['마가에리 티렐',       'tyrell',     '정치적 감각이 뛰어난 왕비 후보. 세르세이의 와일드파이어 폭발로 희생됩니다.',
+              {2:'렌리의 왕비', 3:'조프리와 재약혼',4:'조프리·토멘과 결혼',5:'하이 스패로우에 체포',6:'와일드파이어 폭발로 사망'}],
+  nightking: ['나이트 킹',           'whitewalker','죽은 자들의 군대를 이끄는 고대의 위협. 아리아에게 처치됩니다.',
+              {5:'하드홈 대학살 주도', 6:'브랜 마킹',7:'비세리온 부활, 장벽 붕괴',8:'윈터펠 전투, 아리아에게 처치됨'}],
+  sam:       ['샘웰 탈리',           'nightwatch', '존의 친구이자 지식의 축. 존의 혈통 진실을 밝히는 데 결정적 역할.',
+              {1:'나이트 워치 입대', 2:'장벽 너머 생존',3:'해골아들의 아이 등 구출',4:'마에스터 연구 시작',5:'올드타운 여정',6:'드래곤글라스 발견',7:'존 혈통 문서 발굴',8:'브랜 즉위 지지, 기록자'}],
+  jorah:     ['조라 모르몬트',       'targaryen',  '대너리스를 헌신적으로 섬기는 기사. 윈터펠 전투에서 대너리스를 지키며 전사합니다.',
+              {1:'첩자에서 충성으로', 2:'대너리스 호위',3:'계속 충성',4:'추방',5:'재귀환 시도, 석화병',6:'치료 후 재합류',7:'동방 임무',8:'윈터펠 전투에서 전사'}],
+  davos:     ['다보스 시워스',       'baratheon',  '현실감 있는 조언자. 스태니스 이후 존을 돕습니다.',
+              {2:'스태니스 조언자',3:'계속 충성',4:'스태니스와 함께 장벽으로',5:'스태니스의 전사 이후 생존',6:'존 지지',7:'존 곁에서 대너리스와 협력',8:'최후까지 조언자'}],
+  greyworm:  ['그레이 웜',           'targaryen',  '거세병 지휘관. 대너리스의 군사력을 상징합니다.',
+              {3:'거세병 지휘관 취임', 4:'미린 방어',5:'볼록 전투',6:'미린 방어',7:'웨스테로스 침공 선봉',8:'킹스 랜딩 학살 집행'}],
+};
+
+/* ===== PER-SEASON DATA ===== */
+const SEASONS = [
+  {
+    id:1, title:'왕좌의 게임의 서막', meta:'Season 1 · 2011 · 10편',
+    quote:'명예는 전쟁의 시작점이 된다.',
+    plots:[
+      ['킹스 랜딩의 암투','네드 스타크는 로버트 왕의 수관이 되어 전임 수관의 죽음과 왕위 계승 비밀을 파헤칩니다. 조프리가 왕의 친자가 아님을 알게 되지만 반역죄로 참수됩니다.','#b48839'],
+      ['북부의 반란','네드의 처형에 분노한 북부는 롭 스타크를 왕으로 추대하고 라니스터 가문에 선전포고합니다.','#536e88'],
+      ['드래곤의 탄생','에소스의 대너리스는 칼 드로고와 결혼 후 그의 죽음 이후 화염 속에서 드래곤 세 마리를 부화시키며 진정한 후계자로 각성합니다.','#b43b35'],
+    ],
+    flow:['네드가 수관이 되어 킹스 랜딩으로','왕위 비밀 발각과 반역죄 처형','롭 스타크 - 북부의 왕 추대','대너리스의 드래곤 부화 · 각성'],
+    chars:['ned','catelyn','robb','jon','arya','sansa','cersei','jaime','tyrion','joffrey','daenerys','drogo'],
+    edges:[
+      ['ned','catelyn','love','부부'],
+      ['ned','robb','family','부자'],
+      ['ned','jon','family','양부자'],
+      ['ned','cersei','enemy','수관 vs 음모'],
+      ['catelyn','sansa','family','모녀'],
+      ['catelyn','arya','family','모녀'],
+      ['cersei','jaime','love','쌍둥이/연인'],
+      ['cersei','joffrey','family','모자'],
+      ['jaime','tyrion','family','형제'],
+      ['daenerys','drogo','love','부부'],
+      ['tyrion','joffrey','command','삼촌/왕자'],
+    ],
+  },
+  {
+    id:2, title:'왕들의 전쟁', meta:'Season 2 · 2012 · 10편',
+    quote:'다섯 왕이 일어나면 백성은 다섯 배로 피 흘린다.',
+    plots:[
+      ['다섯 왕의 전쟁','조프리·스태니스·렌리·롭·발론 다섯 명이 왕을 자처하며 웨스테로스 전체가 혼란에 빠집니다.','#b48839'],
+      ['블랙워터 전투','임시 수관 티리온이 와일드파이어로 스태니스의 대규모 함대를 격파하고 킹스 랜딩을 지킵니다.','#536e88'],
+      ['장벽 너머의 위협','존은 야인 군대의 실체와 고대 위협을 직접 확인하며 나이트 워치의 임무가 더 중요함을 깨닫습니다.','#b43b35'],
+    ],
+    flow:['다섯 왕이 동시에 왕위 주장','티리온의 수관 취임과 수도 방어','테온의 윈터펠 점령 배신','존이 야인 세계로 침투'],
+    chars:['robb','catelyn','jon','arya','sansa','cersei','jaime','tyrion','joffrey','stannis','renly','daenerys','theon','ygritte'],
+    edges:[
+      ['robb','catelyn','family','모자'],
+      ['cersei','jaime','love','쌍둥이/연인'],
+      ['cersei','tyrion','family','남매'],
+      ['cersei','joffrey','family','모자'],
+      ['tyrion','joffrey','command','수관과 왕'],
+      ['stannis','renly','enemy','형제 왕위다툼'],
+      ['stannis','tyrion','enemy','블랙워터 전투'],
+      ['jon','ygritte','love','포로·연인 시작'],
+      ['daenerys','jorah','ally','충성'],
+      ['robb','theon','ally','동행 → 배신'],
+      ['theon','robb','enemy','윈터펠 점령 배신'],
+    ],
+  },
+  {
+    id:3, title:'피의 폭풍', meta:'Season 3 · 2013 · 10편',
+    quote:'결혼식의 노래가 끝나면 북부의 왕도 끝난다.',
+    plots:[
+      ['피의 결혼식','롭 스타크가 프레이 약혼을 파기하자, 프레이·볼튼·라니스터가 결탁해 결혼 연회에서 롭·캐틀린·북부군을 학살합니다.','#b48839'],
+      ['거세병의 여왕','대너리스는 아스타포르에서 거세병을 얻고 노예들을 해방하며 강력한 해방군을 이끌기 시작합니다.','#b43b35'],
+      ['존과 야인의 균열','존은 이그리트와 연인 관계가 되지만 사랑과 의무 사이에서 갈등하다 나이트 워치로 돌아갑니다.','#536e88'],
+    ],
+    flow:['라니스터-티렐 대동맹 성립','피의 결혼식으로 북부 저항 붕괴','대너리스 해방군 결성','테온이 램지에게 잡혀 고문 시작'],
+    chars:['robb','catelyn','jon','arya','sansa','cersei','jaime','tyrion','joffrey','daenerys','theon','ygritte','ramsay','walder'],
+    edges:[
+      ['robb','catelyn','family','모자'],
+      ['robb','walder','enemy','피의결혼식 배신'],
+      ['robb','ramsay','enemy','북부찬탈 동맹'],
+      ['cersei','jaime','love','쌍둥이/연인'],
+      ['cersei','joffrey','family','모자'],
+      ['cersei','tyrion','family','남매 대립'],
+      ['tyrion','sansa','love','정략혼'],
+      ['jon','ygritte','love','연인'],
+      ['daenerys','jorah','ally','충성'],
+      ['theon','ramsay','enemy','고문·지배'],
+      ['arya','walder','enemy','복수 목록 추가'],
+    ],
+  },
+  {
+    id:4, title:'검의 폭풍', meta:'Season 4 · 2014 · 10편',
+    quote:'왕은 독으로 죽고, 아버지는 화살로 죽는다.',
+    plots:[
+      ['보라색 결혼식','조프리가 결혼식 도중 독살됩니다. 티리온이 누명을 쓰고 결투 재판 끝에 타이윈을 죽이고 탈출합니다.','#b48839'],
+      ['장벽 방어전','야인 대군이 장벽을 공격하지만 존 스노우가 이끄는 나이트 워치가 막아내고 스태니스가 구원 도착합니다.','#536e88'],
+      ['스타크 생존자들의 이산','사에 스타크는 각자의 생존 여정을 시작합니다. 산사는 탈출, 아리아는 브라보스를 향합니다.','#b43b35'],
+    ],
+    flow:['조프리 독살, 티리온 누명','타이윈 사망으로 라니스터 실권 흔들림','존이 나이트 워치 지도자로 부상','아리아 브라보스 출항'],
+    chars:['jon','arya','sansa','cersei','jaime','tyrion','joffrey','tywin','daenerys','stannis','brienne','ramsay','theon','margaery'],
+    edges:[
+      ['cersei','tyrion','enemy','살인누명'],
+      ['cersei','jaime','love','쌍둥이/연인'],
+      ['cersei','joffrey','family','모자'],
+      ['tywin','tyrion','enemy','부자갈등 · 처형'],
+      ['tywin','cersei','family','부녀'],
+      ['jaime','tyrion','family','형제'],
+      ['joffrey','margaery','love','혼인'],
+      ['jon','stannis','ally','장벽 구원'],
+      ['brienne','jaime','ally','명예의 유대'],
+      ['sansa','ramsay','enemy','볼튼 포위'],
+      ['theon','ramsay','enemy','고문 지속'],
+      ['daenerys','jorah','ally','충성'],
+    ],
+  },
+  {
+    id:5, title:'권력의 대가', meta:'Season 5 · 2015 · 10편',
+    quote:'왕좌를 지키려던 계략은 스스로를 감옥에 가둔다.',
+    plots:[
+      ['세르세이의 몰락','세르세이는 하이 스패로우를 이용해 정적을 견제하지만 자신도 간통죄로 체포되어 수치심의 행진을 겪습니다.','#b48839'],
+      ['하드홈의 대학살','나이트 워치 총사령관 존이 야인들을 구하러 갔다가 나이트 킹의 압도적 군세를 목격하고 가신들에게 배신당합니다.','#536e88'],
+      ['미린의 통치 위기','대너리스는 해방자로서 도시 통치의 한계에 부딪히며 드래곤과 함께 새로운 방향을 모색합니다.','#b43b35'],
+    ],
+    flow:['하이 스패로우 세력이 킹스 랜딩 장악','존이 야인과 동맹 시도, 나이트 워치에 배신당해 사망','산사가 램지의 강제혼 피해자로','스태니스 딸 희생 후 전장 패배'],
+    chars:['jon','arya','sansa','cersei','jaime','tyrion','daenerys','stannis','brienne','ramsay','theon','margaery','nightking','sam'],
+    edges:[
+      ['cersei','margaery','enemy','정치적 정적'],
+      ['cersei','jaime','love','남매/연인'],
+      ['tyrion','daenerys','command','핸드 합류'],
+      ['jon','nightking','enemy','하드홈 조우'],
+      ['jon','sam','ally','친구'],
+      ['daenerys','jorah','ally','재귀환 충성'],
+      ['sansa','ramsay','enemy','강제혼'],
+      ['theon','ramsay','enemy','지배'],
+      ['stannis','davos','command','왕과 조언자'],
+      ['brienne','sansa','command','보호 시도'],
+    ],
+  },
+  {
+    id:6, title:'겨울의 바람', meta:'Season 6 · 2016 · 10편',
+    quote:'죽음에서 돌아온 왕과 불길 속에 선 여왕.',
+    plots:[
+      ['존의 부활과 서자들의 전투','멜리산드레의 주술로 존 스노우가 부활합니다. 산사와 함께 서자들의 전투에서 램지를 처단하고 윈터펠을 되찾습니다.','#536e88'],
+      ['와일드파이어 폭파','세르세이는 대수프 지하의 와일드파이어를 폭파해 하이 스패로우·마가에리 등 정적을 몰살하고 철왕좌에 오릅니다.','#b48839'],
+      ['대너리스의 귀환 준비','도스라키·거세병·드래곤·함대를 결집한 대너리스가 마침내 웨스테로스로 출항합니다.','#b43b35'],
+    ],
+    flow:['존 부활, 북부의 왕으로 추대','서자들의 전투 - 볼튼 몰락','세르세이 철왕좌 등극','대너리스 침공 연합 완성'],
+    chars:['jon','arya','sansa','bran','cersei','jaime','tyrion','daenerys','brienne','ramsay','theon','margaery','nightking','sam'],
+    edges:[
+      ['jon','sansa','family','남매 재회'],
+      ['jon','ramsay','enemy','서자들의 전투'],
+      ['cersei','jaime','love','쌍둥이/연인'],
+      ['cersei','margaery','enemy','최후 정적'],
+      ['tyrion','daenerys','command','핸드'],
+      ['daenerys','jorah','ally','재결합'],
+      ['arya','walder','enemy','복수 · 독살'],
+      ['bran','nightking','enemy','세눈박이 추적'],
+      ['theon','sansa','ally','탈출 속죄'],
+      ['sansa','ramsay','enemy','복수'],
+      ['brienne','sansa','command','보호'],
+    ],
+  },
+  {
+    id:7, title:'얼음과 불의 만남', meta:'Season 7 · 2017 · 7편',
+    quote:'드래곤과 북부의 왕이 같은 적을 바라본다.',
+    plots:[
+      ['드래곤스톤의 동맹','대너리스가 웨스테로스에 상륙합니다. 존은 드래곤글라스와 백귀 위협을 알리기 위해 찾아가고 두 사람은 연인 관계로 발전합니다.','#b43b35'],
+      ['장벽 너머 작전','존 일행이 백귀 포획 작전을 펼치다 대너리스의 드래곤 비세리온이 나이트 킹의 창에 맞아 죽습니다.','#536e88'],
+      ['장벽 붕괴와 진실','나이트 킹이 비세리온을 얼음 드래곤으로 부활시켜 장벽을 무너뜨립니다. 동시에 존이 아에곤 타르가르옌 혈통임이 드러납니다.','#b48839'],
+    ],
+    flow:['대너리스 드래곤스톤 상륙 · 존과 조우','세르세이의 이중 외교','비세리온 희생 · 나이트 킹에게 드래곤 넘어감','장벽 붕괴, 존의 혈통 진실 확인'],
+    chars:['jon','arya','sansa','bran','cersei','jaime','tyrion','daenerys','theon','nightking','sam','brienne','jorah','davos'],
+    edges:[
+      ['jon','daenerys','love','연인/동맹'],
+      ['jon','cersei','enemy','임시 전선'],
+      ['jon','nightking','enemy','북방 조우'],
+      ['tyrion','daenerys','command','핸드'],
+      ['tyrion','cersei','family','남매 협상'],
+      ['cersei','jaime','love','쌍둥이/연인'],
+      ['jorah','daenerys','ally','치료 후 재충성'],
+      ['davos','jon','ally','조언자'],
+      ['bran','nightking','enemy','마킹'],
+      ['sansa','arya','family','자매 재회'],
+      ['theon','daenerys','command','함대 지원'],
+    ],
+  },
+  {
+    id:8, title:'마지막 전쟁', meta:'Season 8 · 2019 · 6편',
+    quote:'철왕좌는 승자의 자리가 아니라 욕망의 잿더미였다.',
+    plots:[
+      ['윈터펠 전투','산 자의 연합군이 나이트 킹의 군대와 결전을 벌입니다. 아리아가 나이트 킹을 단검으로 찌르며 백귀 위협을 종식합니다.','#5f9ab8'],
+      ['킹스 랜딩 학살','항복의 종이 울렸음에도 대너리스는 드래곤으로 킹스 랜딩을 불태워 무고한 민중을 학살합니다.','#b43b35'],
+      ['새로운 시작','존이 대너리스를 죽이고, 드로곤이 철왕좌를 녹입니다. 브랜 스타크가 육왕국의 왕으로 선출되고 산사는 북부의 여왕이 됩니다.','#b48839'],
+    ],
+    flow:['아리아 나이트 킹 처치 → 백귀 위협 종식','대너리스 학살로 해방자 → 폭군 전락','존이 대너리스를 암살','브랜 왕 선출, 스타크 가문의 새 시작'],
+    chars:['jon','arya','sansa','bran','cersei','jaime','tyrion','daenerys','theon','nightking','sam','brienne','jorah','davos','greyworm'],
+    edges:[
+      ['jon','daenerys','love','연인 → 배신'],
+      ['jon','arya','family','남매'],
+      ['jon','sansa','family','남매'],
+      ['jon','bran','family','남매'],
+      ['arya','nightking','enemy','최후 암살'],
+      ['cersei','jaime','love','최후'],
+      ['tyrion','daenerys','command','핸드 → 대립'],
+      ['daenerys','jorah','ally','최후 전투'],
+      ['daenerys','greyworm','command','군 지휘'],
+      ['theon','daenerys','ally','속죄 · 전사'],
+      ['brienne','jaime','ally','기사 서약'],
+      ['sam','jon','ally','혈통 진실 전달'],
+    ],
+  },
+];
+
+/* ===== LAYOUT ENGINE ===== */
+// House cluster centers in 900×600 viewbox
+const CLUSTERS = {
+  stark:      [160, 290],
+  lannister:  [680, 210],
+  targaryen:  [660, 450],
+  baratheon:  [390, 80],
+  nightwatch: [175, 480],
+  greyjoy:    [90,  360],
+  bolton:     [390, 500],
+  freefolk:   [185, 130],
+  whitewalker:[460, 55],
+  tyrell:     [540, 160],
+  other:      [440, 330],
+};
+
+function calcLayout(charIds) {
+  // Group by house
+  const groups = {};
+  charIds.forEach(id => {
+    const h = CH[id][1];
+    if (!groups[h]) groups[h] = [];
+    groups[h].push(id);
+  });
+  const pos = {};
+  Object.entries(groups).forEach(([h, ids]) => {
+    const [cx, cy] = CLUSTERS[h] || CLUSTERS.other;
+    const n = ids.length;
+    ids.forEach((id, i) => {
+      if (n === 1) {
+        pos[id] = [cx, cy];
+      } else {
+        const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+        const r = Math.min(55, 35 + n * 7);
+        pos[id] = [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
+      }
+    });
+  });
+  return pos;
+}
+
+/* ===== STATE ===== */
+let current = 0; // season index
+let houseFilter = 'all';
+let selected = null;
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+function toast(t) {
+  const el = $('#toast');
+  el.textContent = t;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1600);
+}
+
+/* ===== RENDER SEASON BUTTONS ===== */
+function renderSeasonBtns() {
+  $('#seasonTrack').innerHTML = SEASONS.map((s, i) =>
+    `<button class="season-btn ${i === current ? 'active' : ''}" data-i="${i}">
+      <strong>S${s.id}</strong><span>${s.title}</span>
+    </button>`
+  ).join('');
+  $$('.season-btn').forEach(b => b.onclick = () => {
+    current = +b.dataset.i;
+    selected = null;
+    houseFilter = 'all';
+    renderAll();
+  });
+}
+
+/* ===== RENDER SEASON SUMMARY ===== */
+function renderSeason() {
+  const s = SEASONS[current];
+  $('#seasonMeta').textContent = s.meta;
+  $('#seasonTitle').textContent = s.title;
+  $('#quoteSeason').textContent = `Season ${s.id}`;
+  $('#quoteText').textContent = s.quote;
+  $('#plotGrid').innerHTML = s.plots.map(p =>
+    `<article class="plot" style="--accent:${p[2]}">
+      <h4>${p[0]}</h4><p>${p[1]}</p>
+    </article>`
+  ).join('');
+  $('#timelineList').innerHTML = s.flow.map((f, i) =>
+    `<li><i>${i+1}</i><span>${f}</span></li>`
+  ).join('');
+  $('#charSeasonLabel').textContent = `Season ${s.id} — ${s.chars.length}인`;
+  $('#mapSeasonLabel').textContent = `Season ${s.id} — ${s.edges.length}개 관계선`;
+  $('#mapSvgLabel').textContent = `S${s.id} · ${s.title}`;
+}
+
+/* ===== RENDER FILTERS ===== */
+function renderFilters() {
+  const s = SEASONS[current];
+  const houses = [...new Set(s.chars.map(id => CH[id][1]))];
+  $('#houseFilters').innerHTML = ['all', ...houses].map(h =>
+    `<button class="chip ${houseFilter === h ? 'active' : ''}" data-house="${h}">
+      ${h === 'all' ? '전체' : HOUSE[h].label}
+    </button>`
+  ).join('');
+  $$('.chip').forEach(c => c.onclick = () => {
+    houseFilter = c.dataset.house;
+    renderChars();
+    renderMap();
+  });
+}
+
+/* ===== RENDER CHARACTERS ===== */
+function charMatches(id) {
+  const q = $('#searchInput').value.trim().toLowerCase();
+  if (!q) return true;
+  const c = CH[id];
+  return [id, c[0], c[2]].join(' ').toLowerCase().includes(q);
+}
+
+function renderChars() {
+  const s = SEASONS[current];
+  const ids = s.chars.filter(id =>
+    (houseFilter === 'all' || CH[id][1] === houseFilter) && charMatches(id)
+  );
+  if (!ids.length) {
+    $('#charGrid').innerHTML = '<p style="color:#756454;font-weight:800;grid-column:1/-1">검색 결과가 없습니다.</p>';
+    renderDetail();
+    return;
+  }
+  $('#charGrid').innerHTML = ids.map(id => {
+    const c = CH[id], h = HOUSE[c[1]];
+    const roleMap = c[3] || {};
+    const role = roleMap[s.id] || '';
+    return `<button type="button" class="char ${selected === id ? 'selected' : ''}" data-id="${id}">
+      <span class="badge" style="--house:${h.color}">${h.label}</span>
+      <h4>${c[0]}</h4>
+      <p>${c[2]}</p>
+      ${role ? `<div class="season-role">S${s.id}: ${role}</div>` : ''}
+    </button>`;
+  }).join('');
+  $$('.char').forEach(card => card.onclick = () => selectChar(card.dataset.id));
+  renderDetail();
+}
+
+function selectChar(id) {
+  selected = id;
+  renderChars();
+  renderMap();
+  $('#characters').scrollIntoView({ block: 'nearest' });
+}
+
+function renderDetail() {
+  const box = $('#charDetail');
+  if (!selected) { box.classList.remove('show'); box.innerHTML = ''; return; }
+  const s = SEASONS[current];
+  const c = CH[selected], h = HOUSE[c[1]];
+  // Season-specific edges only
+  const rels = s.edges
+    .filter(e => e[0] === selected || e[1] === selected)
+    .map(e => {
+      const other = e[0] === selected ? e[1] : e[0];
+      const typeLabel = {family:'가족',ally:'동맹',enemy:'적대',love:'연인/혼인',command:'지휘/소속'}[e[2]];
+      return `<span class="tag">${CH[other][0]} · ${typeLabel} · ${e[3]}</span>`;
+    }).join('');
+  const roleMap = c[3] || {};
+  const role = roleMap[s.id] || '';
+  box.innerHTML = `
+    <span class="badge" style="--house:${h.color}">${h.label}</span>
+    <h4>${c[0]}</h4>
+    <p>${c[2]}</p>
+    ${role ? `<p style="color:var(--gold);font-weight:900;margin-top:8px">S${s.id}: ${role}</p>` : ''}
+    <div class="tags" style="margin-top:10px">${rels || '<span class="tag">이 시즌 관계선 없음</span>'}</div>
+  `;
+  box.classList.add('show');
+}
+
+/* ===== RENDER MAP ===== */
+function renderMap() {
+  const s = SEASONS[current];
+  const svg = $('#relationSvg');
+  const filter = $('#relationFilter').value;
+  const pos = calcLayout(s.chars);
+
+  // defs
+  const defs = `<defs>
+    <pattern id="pg" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M30 0H0V30" fill="none" stroke="#e8d8c0" stroke-width=".45" opacity=".5"/>
+    </pattern>
+    <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#9c8568" opacity=".7"/>
+    </marker>
+  </defs>
+  <rect width="900" height="600" fill="url(#pg)"/>
+  <text x="22" y="34" class="map-title">Season ${s.id} — ${s.title}</text>`;
+
+  // edges
+  const edgesSvg = s.edges.map(e => {
+    const [a, b, t, label] = e;
+    const pa = pos[a], pb = pos[b];
+    if (!pa || !pb) return '';
+    const visible = filter === 'all' || filter === t;
+    const mx = (pa[0]+pb[0])/2, my = (pa[1]+pb[1])/2 - 6;
+    return `<g class="edge-g ${t}${!visible ? ' dim' : ''}">
+      <line x1="${pa[0]}" y1="${pa[1]}" x2="${pb[0]}" y2="${pb[1]}" marker-end="url(#arr)"/>
+      <text x="${mx}" y="${my}" class="elabel" text-anchor="middle">${label}</text>
+    </g>`;
+  }).join('');
+
+  // nodes
+  const nodesSvg = s.chars.map(id => {
+    const c = CH[id], h = HOUSE[c[1]], p = pos[id];
+    if (!p) return '';
+    const hf = houseFilter !== 'all' && c[1] !== houseFilter;
+    return `<g class="node-g${hf ? ' dim' : ''}${selected === id ? ' selected-node' : ''}" data-id="${id}" transform="translate(${p[0]},${p[1]})">
+      <circle class="nc" r="20" fill="${h.color}"/>
+      <text class="nlabel" x="0" y="35" text-anchor="middle">${c[0].split(' ')[0]}</text>
+    </g>`;
+  }).join('');
+
+  svg.innerHTML = defs + edgesSvg + nodesSvg;
+
+  $$('.node-g').forEach(n => n.onclick = () => {
+    const id = n.dataset.id;
+    selectChar(id);
+    $('#mapInfo').innerHTML = `<strong>${CH[id][0]}</strong><p>${CH[id][2]}</p>`;
+  });
+}
+
+/* ===== RENDER ALL ===== */
+function renderAll() {
+  renderSeasonBtns();
+  renderSeason();
+  renderFilters();
+  renderChars();
+  renderMap();
+}
+
+/* ===== EVENT LISTENERS ===== */
+$('#searchInput').addEventListener('input', () => renderChars());
+$('#relationFilter').addEventListener('change', renderMap);
+$('#clearSelection').onclick = () => { selected = null; renderChars(); renderMap(); };
+$('#copySummary').onclick = async () => {
+  const s = SEASONS[current];
+  const txt = `왕좌의 게임 S${s.id} ${s.title}\n` +
+    s.plots.map(p => `- ${p[0]}: ${p[1]}`).join('\n') +
+    '\n\n핵심 흐름:\n' + s.flow.map((f,i) => `${i+1}. ${f}`).join('\n');
+  try { await navigator.clipboard.writeText(txt); toast('시즌 요약 복사 완료!'); }
+  catch { toast('요약 텍스트 준비 완료'); }
+};
+$('#downloadPng').onclick = () => {
+  const svg = $('#relationSvg');
+  const xml = new XMLSerializer().serializeToString(svg);
+  const blob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1600; canvas.height = 1067;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fbf7ef';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.download = `got-s${SEASONS[current].id}-relationship.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    toast('PNG 저장 시작!');
+  };
+  img.src = url;
+};
+$$('.quick button').forEach(b => b.onclick = () => {
+  document.getElementById(b.dataset.jump).scrollIntoView({ behavior: 'smooth' });
+  $$('.quick button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+});
+
+renderAll();
+</script>
+</body>
+</html>
