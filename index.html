@@ -41,7 +41,7 @@
     .hero-card p{color:#5d4a38;font-size:14px;}
 
     /* ─── SEASON SELECTOR ─── */
-    .controls{max-width:1280px;margin:0 auto 18px;padding:0 20px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;}
+    .controls{position:sticky;top:62px;z-index:20;backdrop-filter:blur(16px);background:rgba(251,247,239,.92);border-bottom:1px solid rgba(180,136,57,.18);max-width:100%;padding:8px 20px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;}
     .season-track{display:flex;gap:9px;overflow:auto;padding-bottom:4px;scrollbar-width:none;}
     .season-track::-webkit-scrollbar{display:none;}
     .season-btn{min-width:92px;border:1px solid rgba(180,136,57,.24);background:rgba(255,253,248,.76);border-radius:16px;padding:11px 9px;cursor:pointer;text-align:left;transition:.22s;font:inherit;}
@@ -55,7 +55,7 @@
     .search::before{content:"⌕";position:absolute;left:13px;top:6px;font-size:22px;color:var(--gold);}
 
     /* ─── MAIN GRID ─── */
-    main{max-width:1280px;margin:auto;padding:0 20px 80px;}
+    main{max-width:1280px;margin:auto;padding:18px 20px 80px;}
     .panel{background:rgba(255,253,248,.8);border:1px solid rgba(180,136,57,.22);border-radius:var(--radius);box-shadow:var(--shadow);}
     .section-title{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:0 0 16px;}
     .section-title h3{font-family:'Noto Serif KR',serif;font-size:26px;line-height:1.15;margin:0;}
@@ -144,7 +144,7 @@
       .hero,.season-view,.map-wrap{grid-template-columns:1fr;}
       .story-grid{grid-template-columns:1fr 1fr;}
       .char-grid{grid-template-columns:repeat(2,1fr);}
-      .controls{grid-template-columns:1fr;}
+      .controls{grid-template-columns:1fr;top:88px;}
       .search input{width:100%;}
       .nav{flex-direction:column;align-items:flex-start;}
       .quick{width:100%;}
@@ -155,6 +155,7 @@
       .char-grid{grid-template-columns:1fr 1fr;}
       .story-grid{grid-template-columns:1fr;}
       .map-card{aspect-ratio:4/3;}
+      .controls{top:108px;}
     }
   </style>
 </head>
